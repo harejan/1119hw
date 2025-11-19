@@ -1,4 +1,3 @@
-# 1119hw
 ---
 title: My Solara GIS App
 emoji: 🌍
