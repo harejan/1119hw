@@ -1,30 +1,30 @@
 FROM python:3.11
 
-# 2. 設定工作目錄
+# 設定工作目錄
 WORKDIR /code
 
-# 3. 複製 requirements 並安裝
-# (利用 Docker cache 機制，先裝套件再複製程式碼)
+# --- ⚡️ 強制刷新區塊 ⚡️ ---
+# 只要改變下面這行日期，Docker 就會被迫重新下載所有套件
+# 這能解決 "ModuleNotFoundError" 的問題
+ENV REFRESHED_AT=2025-11-25_V2
+
+# 強制安裝最新版 leafmap (大於 0.50.0 絕對支援 solara)
+RUN pip install --no-cache-dir "leafmap>=0.50.0" solara pandas
+
+# 複製 requirements.txt (作為備用)
 COPY ./requirements.txt /code/requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
-# 4. 建立一個非 Root 使用者 (User ID 1000)
-# 這是 Hugging Face Spaces 最關鍵的一步！
+# 建立使用者 (Hugging Face 安全規範)
 RUN useradd -m -u 1000 user
-
-# 5. 切換到該使用者
 USER user
-
-# 6. 設定環境變數
-# 並關掉加速靜態檔案讀取 (SOLARA_ASSETS_PROXY=False)
 ENV HOME=/home/user \
     PATH=/home/user/.local/bin:$PATH \
     SOLARA_ASSETS_PROXY=False
 
-# 7. 複製所有程式碼到工作目錄
-# --chown=user 確保新使用者有權限讀取這些檔案
+# 複製程式碼
 COPY --chown=user . /code
 
-# 8. 啟動指令
-# 注意：一定要指定 host 為 0.0.0.0 和 port 為 7860
+# 啟動指令
+# 注意：你的檔案現在可能叫 01_splitmap.py，指向 pages 資料夾最保險
 CMD ["solara", "run", "./pages", "--host=0.0.0.0", "--port=7860"]
