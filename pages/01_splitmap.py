@@ -1,15 +1,19 @@
 import solara
-import leafmap
+import leafmap.solara  # 確保引入這個模組
 
-# 建立地圖的函式
 def create_split_map():
-    # 建立一個捲簾地圖物件
-    # 注意：這裡將中心點微調至 23.665, 121.380 (光復馬太鞍溪橋/濕地附近)
-    m = leafmap.Map(center=[23.665, 121.380], zoom=14, height="650px")
+    # 1. 先建立一個標準的地圖物件，並強制設定中心點與縮放
+    # 這裡的 center 是 [緯度, 經度]
+    m = leafmap.Map(
+        center=[23.665, 121.380], 
+        zoom=14, 
+        height="100%"
+    )
     
+    # 2. 在這個地圖物件上「套用」捲簾功能
     m.split_map(
-        left_layer="Esri.WorldImagery",  # 左側：衛星影像
-        right_layer="OpenStreetMap",     # 右側：街道地圖
+        left_layer="Esri.WorldImagery",  # 左邊：衛星
+        right_layer="OpenStreetMap",     # 右邊：街道
         left_label="衛星影像",
         right_label="街道地圖"
     )
@@ -18,13 +22,16 @@ def create_split_map():
 
 @solara.component
 def Page():
+    # 3. 使用 use_memo 避免畫面重整時地圖重跑
     m = solara.use_memo(create_split_map, dependencies=[])
 
-    with solara.Column(style={"width": "100%", "height": "100vh"}):
-        solara.Markdown("## 🗺️ 馬太鞍溪 - 衛星與地圖對照")
-        solara.Markdown("拖曳中間的分隔線，比較當地的**地形地貌 (衛星)** 與 **聚落道路 (街道)** 分布。")
+    with solara.Column(style={"height": "100vh", "padding": "0px"}):
         
-        # 顯示地圖元件
-        # 在 Solara 中顯示 ipyleaflet 地圖需使用 .element() 或 solara.display()
-        # leafmap 的 Map 物件相容於 ipyleaflet
-        m.element()
+        # 標題區塊
+        with solara.Card(margin=2):
+            solara.Markdown("## 🗺️ 馬太鞍溪 - 衛星/地圖對照")
+            solara.Markdown("請拖曳地圖中央的分隔線，觀察地形與聚落差異。")
+
+        # 4. 關鍵！使用 leafmap.solara.Map 來顯示
+        # 這樣 Solara 才能正確解析地圖的設定
+        leafmap.solara.Map(m)
