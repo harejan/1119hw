@@ -42,8 +42,7 @@ def Page():
 
     with solara.Column(style={"padding": "20px", "max-width": "1200px", "margin": "0 auto"}):
         
-        solara.Markdown("## 🗺️ 馬太鞍溪 - 衛星/街道對照")
-        solara.Markdown("請拖曳地圖中央的 **直線滑桿** 進行比對。")
+        solara.Markdown("## 🗺️ 馬太鞍溪split map")
         
         # 直接顯示 ipyleaflet 物件，這是最穩定的方式
         solara.display(m)

@@ -6,7 +6,7 @@ def Page():
     with solara.Column(style={"padding": "24px", "max-width": "800px", "margin": "0 auto"}):
         
         # --- 報告標題 ---
-        solara.Markdown("# 🌊  馬太鞍溪堰塞湖災害ˋ")
+        solara.Markdown("# 🌊  馬太鞍溪堰塞湖災害")
         
         # --- 詳細報告內容 ---
         solara.Markdown("### 📄 事件始末詳情")
