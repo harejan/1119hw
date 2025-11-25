@@ -1,37 +1,43 @@
 import solara
-import leafmap
+import ipyleaflet  # 我們直接用底層套件，不透過 leafmap 轉一手
 
 def create_split_map():
-    # 1. 建立地圖
-    m = leafmap.Map(
-        center=[23.665, 121.380], 
+    # 1. 直接建立 ipyleaflet 地圖
+    # 這是最底層的物件，Solara 對它的支援度最好
+    m = ipyleaflet.Map(
+        center=[23.665, 121.380],  # 馬太鞍溪座標
         zoom=13, 
-        height="600px",
-        draw_control=False,
-        measure_control=False
+        scroll_wheel_zoom=True,
+        height="600px"
     )
     
-    # 2. 加入捲簾特效
-    try:
-        m.split_map(
-            left_layer="Esri.WorldImagery",
-            right_layer="OpenStreetMap",
-            left_label="衛星影像",
-            right_label="街道地圖"
-        )
-    except Exception as e:
-        print(f"Split map error: {e}")
+    # 2. 定義左右兩張圖層
+    # 左邊：衛星影像 (Esri World Imagery)
+    left_layer = ipyleaflet.TileLayer(
+        url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        name="衛星影像"
+    )
+    
+    # 右邊：街道地圖 (OpenStreetMap)
+    right_layer = ipyleaflet.TileLayer(
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        name="街道地圖"
+    )
 
-    # --- 關鍵修正：強迫地圖「記住」位置 ---
-    # 有時候加入特效後，地圖會重置，所以我們這裡再鎖定一次
-    m.set_center(23.665, 121.380)
-    m.set_zoom(13)
+    # 3. 建立捲簾控制器 (SplitMapControl)
+    split_control = ipyleaflet.SplitMapControl(
+        left_layer=left_layer, 
+        right_layer=right_layer
+    )
+    
+    # 4. 把控制器加到地圖上
+    m.add_control(split_control)
     
     return m
 
 @solara.component
 def Page():
-    # 使用 use_memo 確保地圖只建立一次
+    # 使用 use_memo 鎖定地圖狀態
     m = solara.use_memo(create_split_map, dependencies=[])
 
     with solara.Column(style={"padding": "20px", "max-width": "1200px", "margin": "0 auto"}):
@@ -39,6 +45,5 @@ def Page():
         solara.Markdown("## 🗺️ 馬太鞍溪 - 衛星/街道對照")
         solara.Markdown("請拖曳地圖中央的 **直線滑桿** 進行比對。")
         
-        # --- 關鍵修正：改用 solara.display ---
-        # 這對 ipyleaflet 的複雜控制項支援度較好
+        # 直接顯示 ipyleaflet 物件，這是最穩定的方式
         solara.display(m)

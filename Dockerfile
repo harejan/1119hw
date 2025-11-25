@@ -3,10 +3,11 @@ FROM python:3.11
 # 設定工作目錄
 WORKDIR /code
 
-# --- ⚡️ 焦土政策安裝法 ⚡️ ---
-# 我們不讀取 requirements.txt 了，直接在這裡寫死版本
-# 這樣絕對不會有舊版本來搗亂
-RUN pip install --no-cache-dir "leafmap>=0.50.0" solara pandas
+# --- 關鍵：讀取你的 requirements.txt ---
+COPY ./requirements.txt /code/requirements.txt
+
+# 安裝清單內的所有套件 (包含 ipyleaflet, geopandas 等)
+RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
 # 建立使用者
 RUN useradd -m -u 1000 user
